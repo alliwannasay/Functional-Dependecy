@@ -17,8 +17,10 @@
 #include <sstream>
 using namespace std;
 
-Tane::Tane(int attrNumInput)
+Tane::Tane()
 {
+    this->table.readIn("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//test_data.txt");
+    int attrNumInput = this->table.attrNum;
     this->attrNum = attrNumInput;
     this->lat = Lattice(attrNumInput);
     for(int i = 0; i < attrNumInput; i++)
@@ -57,17 +59,33 @@ string int2str(int int_temp)
     return result;
 }
 
+
+set<int> Tane::str2Set(string s)
+{
+    vector<string>resVec = this->table.divideByChar(s,',');
+    set<int>result;
+    int vecSize = int(resVec.size());
+    for(int i = 0; i < vecSize; i++)
+    {
+        int tmp = atoi(resVec[i].c_str());
+        result.insert(tmp);
+    }
+    return result;
+}
+
 string Tane::set2Str(set<int>A)
 {
+    if(A.size() == 0) return "";
     vector<int>tmp;
     string result;
     for(set<int>::iterator it = A.begin(); it != A.end(); it++)
     {
         tmp.push_back(*it);
     }
-    for(int i = 0; i < tmp.size();i++)
+    result = int2str(tmp[0]);
+    for(int i = 1; i < tmp.size();i++)
     {
-        result = result + ";" + int2str(tmp[i]);
+        result = result + "," + int2str(tmp[i]);
     }
 
     return result;
@@ -198,5 +216,29 @@ void Tane::computeDependencies(int levelIndex)
             }
         }
     }
+}
+
+void Tane::singlePartition(int index)
+{
+    unordered_map<string, set<int>>pi;
+    vector<vector<string>>tmpTable = this->table.table;
+    int rowSize = int(tmpTable.size());
+    for(int i = 0; i < rowSize; i++)
+    {
+        string elemData = tmpTable[i][index];
+        set<int> tmpSet = pi[elemData];
+        tmpSet.insert(i);
+        pi[elemData] = tmpSet;
+    }
+    vector<set<int>>piVec;
+    
+    for(unordered_map<string, set<int>>::iterator it = pi.begin(); it != pi.end(); it++)
+    {
+        piVec.push_back((*it).second);
+    }
+    set<int>indexSet;
+    indexSet.insert(index);
+    this->par[set2Str(indexSet)] = piVec;
+    return;
 }
 

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		650F4D521EA5DC3E003D4964 /* Table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 650F4D501EA5DC3E003D4964 /* Table.cpp */; settings = {ASSET_TAGS = (); }; };
 		65FEB8D81EA4547A0096FF79 /* Lattice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65FEB8CF1EA4547A0096FF79 /* Lattice.cpp */; settings = {ASSET_TAGS = (); }; };
 		65FEB8D91EA4547A0096FF79 /* Level.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65FEB8D11EA4547A0096FF79 /* Level.cpp */; settings = {ASSET_TAGS = (); }; };
 		65FEB8DA1EA4547A0096FF79 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65FEB8D31EA4547A0096FF79 /* main.cpp */; settings = {ASSET_TAGS = (); }; };
@@ -27,6 +28,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		650F4D501EA5DC3E003D4964 /* Table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Table.cpp; sourceTree = "<group>"; };
+		650F4D511EA5DC3E003D4964 /* Table.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Table.hpp; sourceTree = "<group>"; };
 		65FEB8B21EA451AE0096FF79 /* Functional-Dependency */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Functional-Dependency"; sourceTree = BUILT_PRODUCTS_DIR; };
 		65FEB8CF1EA4547A0096FF79 /* Lattice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Lattice.cpp; sourceTree = "<group>"; };
 		65FEB8D01EA4547A0096FF79 /* Lattice.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Lattice.hpp; sourceTree = "<group>"; };
@@ -78,6 +81,8 @@
 				65FEB8D51EA4547A0096FF79 /* Node.hpp */,
 				65FEB8D61EA4547A0096FF79 /* Tane.cpp */,
 				65FEB8D71EA4547A0096FF79 /* Tane.hpp */,
+				650F4D501EA5DC3E003D4964 /* Table.cpp */,
+				650F4D511EA5DC3E003D4964 /* Table.hpp */,
 			);
 			path = "Functional-Dependency";
 			sourceTree = "<group>";
@@ -138,6 +143,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				650F4D521EA5DC3E003D4964 /* Table.cpp in Sources */,
 				65FEB8D91EA4547A0096FF79 /* Level.cpp in Sources */,
 				65FEB8D81EA4547A0096FF79 /* Lattice.cpp in Sources */,
 				65FEB8DA1EA4547A0096FF79 /* main.cpp in Sources */,
