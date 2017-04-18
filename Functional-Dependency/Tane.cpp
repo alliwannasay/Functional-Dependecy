@@ -19,7 +19,7 @@ using namespace std;
 
 Tane::Tane()
 {
-    this->table.readIn("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//test_data.txt");
+    this->table.readIn("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//data.txt");
     int attrNumInput = this->table.attrNum;
     this->attrNum = attrNumInput;
     this->lat = Lattice(attrNumInput);
@@ -27,6 +27,8 @@ Tane::Tane()
     {
         this->R.insert(i);
     }
+    set<int>tmp;
+    this->emptySet = tmp;
 }
 
 void Tane::taneMain()
@@ -36,6 +38,7 @@ void Tane::taneMain()
     {
         computeDependencies(i);
         prune(i);
+        this->lat.levelList[i+1].update(this->lat.levelList[i]);
     }
 }
 
@@ -91,47 +94,64 @@ string Tane::set2Str(set<int>A)
     return result;
 }
 
+void Tane::calculatePartition(set<int>A)
+{
+    if(A.size() == 0) return;
+    for(set<int>::iterator it = A.begin(); it != A.end(); it++)
+    {
+        singlePartition(*it);
+        set<int>sin;
+        sin.insert(*it);
+        set<int>tmp = A;
+        tmp.erase(*it);
+        if(this->par[set2Str(tmp)].size() == 0)
+        {
+            calculatePartition(tmp);
+        }
+        productPartition(this->par[set2Str(tmp)], this->par[set2Str(sin)], tmp, sin);
+    }
+}
+
+bool test(set<int>A,int B)
+{
+    int a[]= {0};
+    set<int>setA(a,a+1);
+    if(setA == A && B == 2) return true;
+    return false;
+}
+
 
 void Tane::prune(int levelIndex)
 {
+//    if(levelIndex == 4)
+//    {
+//        int p = 0;
+//    }
+//    Level thisLevel = this->lat.levelList[levelIndex];
+//    for(vector<Node>::iterator it = thisLevel.elemSets.begin(); it != thisLevel.elemSets.end();it++)
+//    {
+//        if(it->nodeElem.size() == 0) continue;
+//        Node tmpNode = *it;
+//        set<int> tmpSet = tmpNode.nodeElem;
+//        if(isRHSEmpty(tmpSet))
+//        {
+//            thisLevel.elemSets.erase(it);
+////            erase(thisLevel.elemSets.begin(),thisLevel.elemSets.end(),*it);
+//            this->lat.levelList[levelIndex] = thisLevel;
+//        }
+//    }
+    
     Level thisLevel = this->lat.levelList[levelIndex];
-    for(vector<Node>::iterator it = thisLevel.elemSets.begin(); it != thisLevel.elemSets.end();it++)
+    int thisSize = int(thisLevel.elemSets.size());
+    for(int i = 0; i < thisSize; i++)
     {
-        Node tmpNode = *it;
+        Node tmpNode = thisLevel.elemSets[i];
         set<int> tmpSet = tmpNode.nodeElem;
         if(isRHSEmpty(tmpSet))
         {
+            vector<Node>::iterator it = find(thisLevel.elemSets.begin(),thisLevel.elemSets.end(),tmpNode);
             thisLevel.elemSets.erase(it);
             this->lat.levelList[levelIndex] = thisLevel;
-        }
-        if(isSuperkey(tmpSet))
-        {
-            set<int>toCheck = getComple(this->RHS[set2Str(tmpSet)],tmpSet);
-            for(set<int>::iterator it2 = toCheck.begin(); it2 != toCheck.end(); it2++)
-            {
-                int A = *it2;
-                set<int>Aset;
-                Aset.insert(A);
-                set<int>toInter;
-                for(set<int>::iterator it3 = tmpSet.begin(); it3 != tmpSet.end(); it3++)
-                {
-                    int B = *it3;
-                    set<int>Bset;
-                    Bset.insert(B);
-                    set<int>XA = getUnion(tmpSet,Aset);
-                    set<int>LHS = getComple(XA,Bset);
-                    set<int>thisRHS = this->RHS[set2Str(LHS)];
-                    toInter = getInter(toInter,thisRHS);
-                }
-                set<int>::iterator it4 = toInter.find(A);
-                if(it4 != toInter.end())
-                {
-//                    this->FD[tmpSet] = A;
-                    this->FD.insert(make_pair(set2Str(tmpSet), A));
-                }
-                thisLevel.elemSets.erase(it);
-                this->lat.levelList[levelIndex] = thisLevel;
-            }
         }
     }
 }
@@ -166,13 +186,44 @@ set<int> Tane::getUnion(set<int>A,set<int>B)
     return result;
 }
 
-bool isValid(set<int>A,int B)
+bool Tane::isValid(set<int>A,int B)
 {
+    if(this->par[set2Str(A)].size() == 0)
+    {
+        calculatePartition(A);
+    }
+    vector<set<int>>piA = this->par[set2Str(A)];
+    set<int>setB;
+    setB.insert(B);
+    if(this->par[set2Str(setB)].size() == 0)
+    {
+        calculatePartition(setB);
+    }
+    set<int>setAB = getUnion(A,setB);
+    if(this->par[set2Str(setAB)].size() == 0)
+    {
+//        calculatePartition(setAB);
+        productPartition(this->par[set2Str(A)], this->par[set2Str(setB)], A, setB);
+    }
+    vector<set<int>>piAB = this->par[set2Str(setAB)];
+    if(piA.size() == piAB.size())
+    {
+        return true;
+    }
     return false;
 }
 
 bool Tane::isSuperkey(set<int>X)
 {
+    if(this->par[set2Str(X)].size() == 0)
+    {
+        calculatePartition(X);
+    }
+    vector<set<int>>piRes = this->par[set2Str(X)];
+    if(piRes.size() == this->table.table.size())
+    {
+        return true;
+    }
     return false;
 }
 
@@ -184,11 +235,11 @@ void Tane::computeDependencies(int levelIndex)
     {
         Node tmpNode = thisLevel.elemSets[i];
         set<int> tmpSet = tmpNode.nodeElem;
-        set<int> tmpInter;
+        set<int> tmpInter = this->R;
         for(set<int>::iterator it=tmpSet.begin(); it != tmpSet.end(); it++)
         {
             set<int>afterDelete = tmpSet;
-            afterDelete.erase(it);
+            afterDelete.erase(*it);
             set<int>rhsResult = this->RHS[set2Str(afterDelete)];
             tmpInter = getInter(tmpInter,rhsResult);
         }
@@ -204,11 +255,13 @@ void Tane::computeDependencies(int levelIndex)
         for(set<int>::iterator it2 = toTraverse.begin(); it2 != toTraverse.end(); it2++)
         {
             set<int>afterDelete = tmpSet;
-            afterDelete.erase(it2);
+            afterDelete.erase(*it2);
+            
             if(isValid(afterDelete,*it2))
             {
-                this->FD.insert(make_pair(set2Str(afterDelete), *it2));
-                this->RHS[set2Str(tmpSet)].erase(it2);
+                this->FD.push_back(make_pair(set2Str(afterDelete), *it2));
+                outputSingle("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//my_test_output.txt",afterDelete,*it2);
+                this->RHS[set2Str(tmpSet)].erase(*it2);
                 set<int>RdTmpSet = getComple(this->R,tmpSet);
                 tmpRHS = this->RHS[set2Str(tmpSet)];
                 set<int>afterRemove = getComple(tmpRHS, RdTmpSet);
@@ -240,5 +293,98 @@ void Tane::singlePartition(int index)
     indexSet.insert(index);
     this->par[set2Str(indexSet)] = piVec;
     return;
+}
+
+void Tane::productPartition(vector<set<int>>&A,vector<set<int>>&B,set<int>setA,set<int>setB)
+{
+    if(setA.size() == 0 || setB.size() == 0) return;
+    vector<set<int>>result;
+    int sizeA = int(A.size());
+    int sizeB = int(B.size());
+    unordered_map<int,int>T;
+    unordered_map<int,set<int>>S;
+    for(int i = 1; i <= sizeA; i++)
+    {
+        set<int>c = A[i-1];
+        for(set<int>::iterator it = c.begin(); it != c.end(); it++)
+        {
+            int t = *it;
+            T[t] = i;
+        }
+        S[i] = this->emptySet;
+    }
+    for(int i = 1; i <= sizeB; i++)
+    {
+        set<int>c = B[i-1];
+        for(set<int>::iterator it = c.begin(); it != c.end(); it++)
+        {
+            int t = *it;
+            set<int>tSet;
+            tSet.insert(t);
+            if(T[t] != 0)
+            {
+                S[T[t]] = this->getUnion(S[T[t]], tSet);
+            }
+        }
+        for(set<int>::iterator it = c.begin(); it != c.end(); it++)
+        {
+            int t = *it;
+            if(S[T[t]].size() >= 1)
+            {
+                vector<set<int>>::iterator itr = find(result.begin(),result.end(),S[T[t]]);
+                if(itr == result.end())
+                {
+                    result.push_back(S[T[t]]);
+                }
+                S[T[t]] = this->emptySet;
+            }
+        }
+    }
+    set<int>C = getUnion(setA, setB);
+    par[set2Str(C)] = result;
+//    return result;
+}
+
+void Tane::outputFile(string filename)
+{
+    ofstream fout(filename);
+    vector<string>result;
+    int sizeFD = int(this->FD.size());
+    for(int i = 0; i < sizeFD; i++)
+    {
+        string A = "";
+        set<int>left = str2Set(FD[i].first);
+        for(set<int>::iterator itj = left.begin(); itj != left.end(); itj++)
+        {
+//            fout<<*itj+1<<" ";
+            A = A+int2str(*itj+1)+" ";
+        }
+//        fout<<"-> ";
+//        fout<<FD[i].second+1<<endl;
+        A = A+"-> "+int2str(FD[i].second+1)+"\n";
+        result.push_back(A);
+    }
+    sort(result.begin(),result.end());
+    int resSize = result.size();
+    for(int i = 0; i < resSize; i++)
+    {
+        fout<<result[i];
+    }
+}
+
+void Tane::outputSingle(string filename,set<int>left,int B)
+{
+    ofstream fout(filename, ofstream::app);
+    string A = "";
+    for(set<int>::iterator itj = left.begin(); itj != left.end(); itj++)
+    {
+        //            fout<<*itj+1<<" ";
+        A = A+int2str(*itj+1)+" ";
+    }
+    //        fout<<"-> ";
+    //        fout<<FD[i].second+1<<endl;
+    A = A+"-> "+int2str(B+1)+"\n";
+    fout<<A;
+    cout<<A;
 }
 

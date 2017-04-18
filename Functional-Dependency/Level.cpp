@@ -26,7 +26,7 @@ Level Level::update(Level preLevel)
     for(int i = 0; i < preElemNum; i++)
     {
         Node tmp = preLevel.elemSets[i];
-        for(int j = 1; j <= this->attrNum; j++)
+        for(int j = 0; j < this->attrNum; j++)
         {
             set<int>::iterator it = tmp.nodeElem.find(j);
             if(it == tmp.nodeElem.end())

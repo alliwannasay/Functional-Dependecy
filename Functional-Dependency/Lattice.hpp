@@ -22,6 +22,7 @@ public:
     
     Lattice();
     Lattice(int attrNumInput);
+    void cascadeDelete(int levelNum, int loc);
     
 };
 

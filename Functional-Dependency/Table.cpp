@@ -26,11 +26,12 @@ void Table::readIn(string filename)
         string tmp;
         getline(fs,tmp);
         vector<string>vecTmp = divideByChar(tmp,',');
-        if(this->attrNum == 0) this->attrNum = int(vecTmp.size());
+        
         if(vecTmp.size() == 0)
         {
             break;
         }
+        this->attrNum = int(vecTmp.size());
         this->table.push_back(vecTmp);
     }
 }
