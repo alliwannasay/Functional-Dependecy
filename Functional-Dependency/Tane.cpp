@@ -17,9 +17,9 @@
 #include <sstream>
 using namespace std;
 
-Tane::Tane()
+Tane::Tane(string filename)
 {
-    this->table.readIn("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//data.txt");
+    this->table.readIn(filename);
     int attrNumInput = this->table.attrNum;
     this->attrNum = attrNumInput;
     this->lat = Lattice(attrNumInput);
@@ -112,35 +112,8 @@ void Tane::calculatePartition(set<int>A)
     }
 }
 
-bool test(set<int>A,int B)
-{
-    int a[]= {0};
-    set<int>setA(a,a+1);
-    if(setA == A && B == 2) return true;
-    return false;
-}
-
-
 void Tane::prune(int levelIndex)
 {
-//    if(levelIndex == 4)
-//    {
-//        int p = 0;
-//    }
-//    Level thisLevel = this->lat.levelList[levelIndex];
-//    for(vector<Node>::iterator it = thisLevel.elemSets.begin(); it != thisLevel.elemSets.end();it++)
-//    {
-//        if(it->nodeElem.size() == 0) continue;
-//        Node tmpNode = *it;
-//        set<int> tmpSet = tmpNode.nodeElem;
-//        if(isRHSEmpty(tmpSet))
-//        {
-//            thisLevel.elemSets.erase(it);
-////            erase(thisLevel.elemSets.begin(),thisLevel.elemSets.end(),*it);
-//            this->lat.levelList[levelIndex] = thisLevel;
-//        }
-//    }
-    
     Level thisLevel = this->lat.levelList[levelIndex];
     int thisSize = int(thisLevel.elemSets.size());
     for(int i = 0; i < thisSize; i++)
@@ -202,16 +175,17 @@ bool Tane::isValid(set<int>A,int B)
     set<int>setAB = getUnion(A,setB);
     if(this->par[set2Str(setAB)].size() == 0)
     {
-//        calculatePartition(setAB);
         productPartition(this->par[set2Str(A)], this->par[set2Str(setB)], A, setB);
     }
     vector<set<int>>piAB = this->par[set2Str(setAB)];
-    if(piA.size() == piAB.size())
+    
+    if(sumSize(piA)-piA.size() == sumSize(piAB)-piAB.size())
     {
         return true;
     }
     return false;
 }
+
 
 bool Tane::isSuperkey(set<int>X)
 {
@@ -256,11 +230,10 @@ void Tane::computeDependencies(int levelIndex)
         {
             set<int>afterDelete = tmpSet;
             afterDelete.erase(*it2);
-            
+            if(afterDelete.size() == 0) continue;
             if(isValid(afterDelete,*it2))
             {
                 this->FD.push_back(make_pair(set2Str(afterDelete), *it2));
-                outputSingle("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//my_test_output.txt",afterDelete,*it2);
                 this->RHS[set2Str(tmpSet)].erase(*it2);
                 set<int>RdTmpSet = getComple(this->R,tmpSet);
                 tmpRHS = this->RHS[set2Str(tmpSet)];
@@ -287,7 +260,10 @@ void Tane::singlePartition(int index)
     
     for(unordered_map<string, set<int>>::iterator it = pi.begin(); it != pi.end(); it++)
     {
-        piVec.push_back((*it).second);
+        if((*it).second.size() > 1)
+        {
+            piVec.push_back((*it).second);
+        }
     }
     set<int>indexSet;
     indexSet.insert(index);
@@ -301,11 +277,14 @@ void Tane::productPartition(vector<set<int>>&A,vector<set<int>>&B,set<int>setA,s
     vector<set<int>>result;
     int sizeA = int(A.size());
     int sizeB = int(B.size());
-    unordered_map<int,int>T;
-    unordered_map<int,set<int>>S;
-    for(int i = 1; i <= sizeA; i++)
+    vector<int>T;
+    T.resize(this->table.table.size());
+    T.assign(this->table.table.size(), -1);
+    vector<set<int>>S;
+    S.resize(this->table.table.size());
+    for(int i = 0; i < sizeA; i++)
     {
-        set<int>c = A[i-1];
+        set<int>c = A[i];
         for(set<int>::iterator it = c.begin(); it != c.end(); it++)
         {
             int t = *it;
@@ -313,36 +292,32 @@ void Tane::productPartition(vector<set<int>>&A,vector<set<int>>&B,set<int>setA,s
         }
         S[i] = this->emptySet;
     }
-    for(int i = 1; i <= sizeB; i++)
+    for(int i = 0; i < sizeB; i++)
     {
-        set<int>c = B[i-1];
+        set<int>c = B[i];
         for(set<int>::iterator it = c.begin(); it != c.end(); it++)
         {
             int t = *it;
             set<int>tSet;
             tSet.insert(t);
-            if(T[t] != 0)
+            if(T[t] >= 0)
             {
-                S[T[t]] = this->getUnion(S[T[t]], tSet);
+                S[T[t]].insert(t);
             }
         }
         for(set<int>::iterator it = c.begin(); it != c.end(); it++)
         {
             int t = *it;
-            if(S[T[t]].size() >= 1)
+            if(T[t] < 0) continue;
+            if(S[T[t]].size() >= 2)
             {
-                vector<set<int>>::iterator itr = find(result.begin(),result.end(),S[T[t]]);
-                if(itr == result.end())
-                {
-                    result.push_back(S[T[t]]);
-                }
-                S[T[t]] = this->emptySet;
+                result.push_back(S[T[t]]);
             }
+            S[T[t]] = this->emptySet;
         }
     }
     set<int>C = getUnion(setA, setB);
     par[set2Str(C)] = result;
-//    return result;
 }
 
 void Tane::outputFile(string filename)
@@ -356,35 +331,27 @@ void Tane::outputFile(string filename)
         set<int>left = str2Set(FD[i].first);
         for(set<int>::iterator itj = left.begin(); itj != left.end(); itj++)
         {
-//            fout<<*itj+1<<" ";
             A = A+int2str(*itj+1)+" ";
         }
-//        fout<<"-> ";
-//        fout<<FD[i].second+1<<endl;
         A = A+"-> "+int2str(FD[i].second+1)+"\n";
         result.push_back(A);
     }
     sort(result.begin(),result.end());
-    int resSize = result.size();
+    int resSize = int(result.size());
     for(int i = 0; i < resSize; i++)
     {
         fout<<result[i];
     }
 }
 
-void Tane::outputSingle(string filename,set<int>left,int B)
+int Tane::sumSize(vector<set<int>>&A)
 {
-    ofstream fout(filename, ofstream::app);
-    string A = "";
-    for(set<int>::iterator itj = left.begin(); itj != left.end(); itj++)
+    int sum = 0;
+    int sizeA = int(A.size());
+    for(int i = 0; i < sizeA;i++)
     {
-        //            fout<<*itj+1<<" ";
-        A = A+int2str(*itj+1)+" ";
+        sum += int(A[i].size());
     }
-    //        fout<<"-> ";
-    //        fout<<FD[i].second+1<<endl;
-    A = A+"-> "+int2str(B+1)+"\n";
-    fout<<A;
-    cout<<A;
+    return sum;
 }
 

@@ -17,8 +17,8 @@ using namespace std;
 
 int main()
 {
-    Tane thistane;
+    Tane thistane("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//test_data.txt");
     thistane.taneMain();
-
+    thistane.outputFile("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//my_test_output.txt");
     return 0;
 }

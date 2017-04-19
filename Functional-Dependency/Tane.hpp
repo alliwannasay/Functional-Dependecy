@@ -32,7 +32,7 @@ public:
     set<int>R;
     Table table;
     
-    Tane();
+    Tane(string filename);
     void taneMain();
     void computeDependencies(int levelIndex);
     void prune(int levelIndex);
@@ -48,7 +48,7 @@ public:
     void calculatePartition(set<int>A);
     void productPartition(vector<set<int>>&A,vector<set<int>>&B,set<int>setA,set<int>setB);
     void outputFile(string filename);
-    void outputSingle(string filename,set<int>left,int B);
+    int sumSize(vector<set<int>>&A);
 };
 
 #endif /* Tane_hpp */
