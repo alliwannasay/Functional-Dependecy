@@ -34,20 +34,12 @@ Level Level::update(Level preLevel)
                 Node newTmp;
                 newTmp.nodeElem = tmp.nodeElem;
                 newTmp.nodeElem.insert(j);
-                newTmp.upPnt.push_back(i);
                 
                 vector<Node>::iterator itv = find(this->elemSets.begin(),this->elemSets.end(),newTmp);
                 if(itv == this->elemSets.end())
                 {
                     this->elemSets.push_back(newTmp);
-                    preLevel.elemSets[i].downPnt.push_back(int(this->elemSets.size()) - 1);
                 }
-                else
-                {
-                    this->elemSets[itv-(this->elemSets.begin())].upPnt.push_back(i);
-                    preLevel.elemSets[i].downPnt.push_back(int(itv-(this->elemSets.begin())));
-                }
-                
             }
         }
     }

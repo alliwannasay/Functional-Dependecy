@@ -17,8 +17,6 @@ using namespace std;
 class Node{
 public:
     set<int>nodeElem;
-    vector<int> downPnt;
-    vector<int> upPnt;
     
     Node();
     bool operator == (Node& nodeInput);

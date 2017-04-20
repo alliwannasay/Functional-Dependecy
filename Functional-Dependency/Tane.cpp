@@ -15,7 +15,20 @@
 #include <unordered_map>
 #include <map>
 #include <sstream>
+#include <algorithm>
 using namespace std;
+
+void Tane::startClock()
+{
+    this->begin = clock();
+}
+
+void Tane::endClock()
+{
+    this->end = clock();
+    this->tsum += this->end - this->begin;
+}
+
 
 Tane::Tane(string filename)
 {
@@ -29,20 +42,25 @@ Tane::Tane(string filename)
     }
     set<int>tmp;
     this->emptySet = tmp;
+    this->tsum = 0;
 }
 
 void Tane::taneMain()
 {
+    
     this->RHS.insert(make_pair(set2Str(this->emptySet), this->R));
     for(int i = 1; i <= this->attrNum; i++)
     {
+        
+        this->lat.levelList[i].update(this->lat.levelList[i-1]);
         computeDependencies(i);
         prune(i);
-        this->lat.levelList[i+1].update(this->lat.levelList[i]);
+        
     }
+    
 }
 
-bool Tane::isRHSEmpty(set<int>X)
+bool Tane::isRHSEmpty(set<int>&X)
 {
     set<int> result = this->RHS[set2Str(X)];
     if(result.empty())
@@ -65,6 +83,7 @@ string int2str(int int_temp)
 
 set<int> Tane::str2Set(string s)
 {
+    
     vector<string>resVec = this->table.divideByChar(s,',');
     set<int>result;
     int vecSize = int(resVec.size());
@@ -73,11 +92,13 @@ set<int> Tane::str2Set(string s)
         int tmp = atoi(resVec[i].c_str());
         result.insert(tmp);
     }
+    
     return result;
 }
 
-string Tane::set2Str(set<int>A)
+string Tane::set2Str(set<int>&A)
 {
+    
     if(A.size() == 0) return "";
     vector<int>tmp;
     string result;
@@ -90,11 +111,11 @@ string Tane::set2Str(set<int>A)
     {
         result = result + "," + int2str(tmp[i]);
     }
-
+    
     return result;
 }
 
-void Tane::calculatePartition(set<int>A)
+void Tane::calculatePartition(set<int>&A)
 {
     if(A.size() == 0) return;
     for(set<int>::iterator it = A.begin(); it != A.end(); it++)
@@ -129,7 +150,7 @@ void Tane::prune(int levelIndex)
     }
 }
 
-set<int> Tane::getInter(set<int>A,set<int>B)
+set<int> Tane::getInter(set<int>&A,set<int>&B)
 {
     vector<int>tmp;
     tmp.resize(A.size()+B.size());
@@ -139,7 +160,7 @@ set<int> Tane::getInter(set<int>A,set<int>B)
     return result;
 }
 
-set<int> Tane::getComple(set<int>A,set<int>B)
+set<int> Tane::getComple(set<int>&A,set<int>&B)
 {
     vector<int>tmp;
     tmp.resize(A.size()+B.size());
@@ -149,7 +170,7 @@ set<int> Tane::getComple(set<int>A,set<int>B)
     return result;
 }
 
-set<int> Tane::getUnion(set<int>A,set<int>B)
+set<int> Tane::getUnion(set<int>&A,set<int>&B)
 {
     vector<int>tmp;
     tmp.resize(A.size()+B.size());
@@ -159,8 +180,9 @@ set<int> Tane::getUnion(set<int>A,set<int>B)
     return result;
 }
 
-bool Tane::isValid(set<int>A,int B)
+bool Tane::isValid(set<int>&A,int B)
 {
+    
     if(this->par[set2Str(A)].size() == 0)
     {
         calculatePartition(A);
@@ -179,15 +201,16 @@ bool Tane::isValid(set<int>A,int B)
     }
     vector<set<int>>piAB = this->par[set2Str(setAB)];
     
-    if(sumSize(piA)-piA.size() == sumSize(piAB)-piAB.size())
+    if(this->parSum[set2Str(A)]-piA.size() == this->parSum[set2Str(setAB)]-piAB.size())
     {
         return true;
     }
+    
     return false;
 }
 
 
-bool Tane::isSuperkey(set<int>X)
+bool Tane::isSuperkey(set<int>&X)
 {
     if(this->par[set2Str(X)].size() == 0)
     {
@@ -203,6 +226,7 @@ bool Tane::isSuperkey(set<int>X)
 
 void Tane::computeDependencies(int levelIndex)
 {
+    
     Level thisLevel = this->lat.levelList[levelIndex];
     int thisLevelSize = int(thisLevel.elemSets.size());
     for(int i = 0; i < thisLevelSize; i++)
@@ -231,6 +255,8 @@ void Tane::computeDependencies(int levelIndex)
             set<int>afterDelete = tmpSet;
             afterDelete.erase(*it2);
             if(afterDelete.size() == 0) continue;
+            
+            
             if(isValid(afterDelete,*it2))
             {
                 this->FD.push_back(make_pair(set2Str(afterDelete), *it2));
@@ -240,8 +266,10 @@ void Tane::computeDependencies(int levelIndex)
                 set<int>afterRemove = getComple(tmpRHS, RdTmpSet);
                 this->RHS[set2Str(tmpSet)] = afterRemove;
             }
+            
         }
     }
+    
 }
 
 void Tane::singlePartition(int index)
@@ -249,6 +277,7 @@ void Tane::singlePartition(int index)
     unordered_map<string, set<int>>pi;
     vector<vector<string>>tmpTable = this->table.table;
     int rowSize = int(tmpTable.size());
+    int sum = 0;
     for(int i = 0; i < rowSize; i++)
     {
         string elemData = tmpTable[i][index];
@@ -263,16 +292,19 @@ void Tane::singlePartition(int index)
         if((*it).second.size() > 1)
         {
             piVec.push_back((*it).second);
+            sum += (*it).second.size();
         }
     }
     set<int>indexSet;
     indexSet.insert(index);
     this->par[set2Str(indexSet)] = piVec;
+    this->parSum[set2Str(indexSet)] = sum;
     return;
 }
 
-void Tane::productPartition(vector<set<int>>&A,vector<set<int>>&B,set<int>setA,set<int>setB)
+void Tane::productPartition(vector<set<int>>&A,vector<set<int>>&B,set<int>&setA,set<int>&setB)
 {
+    
     if(setA.size() == 0 || setB.size() == 0) return;
     vector<set<int>>result;
     int sizeA = int(A.size());
@@ -282,6 +314,7 @@ void Tane::productPartition(vector<set<int>>&A,vector<set<int>>&B,set<int>setA,s
     T.assign(this->table.table.size(), -1);
     vector<set<int>>S;
     S.resize(this->table.table.size());
+    int sum = 0;
     for(int i = 0; i < sizeA; i++)
     {
         set<int>c = A[i];
@@ -312,12 +345,15 @@ void Tane::productPartition(vector<set<int>>&A,vector<set<int>>&B,set<int>setA,s
             if(S[T[t]].size() >= 2)
             {
                 result.push_back(S[T[t]]);
+                sum += S[T[t]].size();
             }
             S[T[t]] = this->emptySet;
         }
     }
     set<int>C = getUnion(setA, setB);
-    par[set2Str(C)] = result;
+    this->par[set2Str(C)] = result;
+    this->parSum[set2Str(C)] = sum;
+    
 }
 
 void Tane::outputFile(string filename)
@@ -343,15 +379,3 @@ void Tane::outputFile(string filename)
         fout<<result[i];
     }
 }
-
-int Tane::sumSize(vector<set<int>>&A)
-{
-    int sum = 0;
-    int sizeA = int(A.size());
-    for(int i = 0; i < sizeA;i++)
-    {
-        sum += int(A[i].size());
-    }
-    return sum;
-}
-

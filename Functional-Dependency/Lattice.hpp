@@ -22,8 +22,6 @@ public:
     
     Lattice();
     Lattice(int attrNumInput);
-    void cascadeDelete(int levelNum, int loc);
-    
 };
 
 #endif /* Lattice_hpp */
