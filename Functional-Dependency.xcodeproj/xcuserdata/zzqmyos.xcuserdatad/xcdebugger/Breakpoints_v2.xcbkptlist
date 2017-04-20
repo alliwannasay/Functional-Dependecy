@@ -62,9 +62,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "359"
-            endingLineNumber = "359"
-            landmarkName = "Tane::productPartition(vector&lt;set&lt;int&gt;&gt;&amp;A,vector&lt;set&lt;int&gt;&gt;&amp;B,set&lt;int&gt;setA,set&lt;int&gt;setB)"
-            landmarkType = "5">
+            endingLineNumber = "359">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -78,9 +76,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "370"
-            endingLineNumber = "370"
-            landmarkName = "Tane::productPartition(vector&lt;set&lt;int&gt;&gt;&amp;A,vector&lt;set&lt;int&gt;&gt;&amp;B,set&lt;int&gt;setA,set&lt;int&gt;setB)"
-            landmarkType = "5">
+            endingLineNumber = "370">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -94,9 +90,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "365"
-            endingLineNumber = "365"
-            landmarkName = "Tane::productPartition(vector&lt;set&lt;int&gt;&gt;&amp;A,vector&lt;set&lt;int&gt;&gt;&amp;B,set&lt;int&gt;setA,set&lt;int&gt;setB)"
-            landmarkType = "5">
+            endingLineNumber = "365">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -110,9 +104,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "375"
-            endingLineNumber = "375"
-            landmarkName = "Tane::productPartition(vector&lt;set&lt;int&gt;&gt;&amp;A,vector&lt;set&lt;int&gt;&gt;&amp;B,set&lt;int&gt;setA,set&lt;int&gt;setB)"
-            landmarkType = "5">
+            endingLineNumber = "375">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
