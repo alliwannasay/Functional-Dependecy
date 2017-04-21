@@ -27,10 +27,8 @@ public:
     int attrNum;
     Lattice lat;
     vector<pair<string,int>>FD;
-    unordered_map<string, int>parSum;
-    set<int>emptySet;
-    set<int>R;
     Table table;
+    int all;
     time_t tsum;
     time_t begin;
     time_t end;

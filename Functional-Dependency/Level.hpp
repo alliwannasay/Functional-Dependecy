@@ -27,9 +27,11 @@ public:
     Level(int indexInput,int attrNumInput,Table& tableIn);
     void update(Level& preLevel,Level&sndLevel);
     void initRoot();
+    void initSnd();
     void getPi(Node& target);
     void getPiProduct(Node& target, Node& A, Node& B);
     void isInLevel(Node& source);
+    bool isNodeIn(Node& source);
 };
 
 #endif /* Level_hpp */

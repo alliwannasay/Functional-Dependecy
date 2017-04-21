@@ -35,20 +35,14 @@ Tane::Tane(string filename)
     this->table.readIn(filename);
     int attrNumInput = this->table.attrNum;
     this->attrNum = attrNumInput;
-    this->lat = Lattice(attrNumInput);
-    for(int i = 0; i < attrNumInput; i++)
-    {
-        this->R.insert(i);
-    }
-    set<int>tmp;
-    this->emptySet = tmp;
+    this->lat = Lattice(attrNumInput,this->table);
+    this->all = (1 << attrNumInput) - 1;
     this->tsum = 0;
 }
 
 void Tane::taneMain()
 {
-    
-    this->RHS.insert(make_pair(set2Str(this->emptySet), this->R));
+    this->lat.levelList[0].elemSets[0].nodeElem = this->all;
     for(int i = 1; i <= this->attrNum; i++)
     {
         

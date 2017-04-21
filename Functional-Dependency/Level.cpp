@@ -35,6 +35,10 @@ void Level::update(Level& preLevel,Level& sndLevel)
         {
             int newElem = tmp.nodeElem | sndt.nodeElem;
             Node newNode(this->attrNum,newElem);
+            if(this->isNodeIn(newNode) == true)
+            {
+                continue;
+            }
             if(preLevel.index == 0)
             {
                 newNode.isSingle = true;
@@ -54,7 +58,35 @@ void Level::initRoot()
 {
     this->index = 0;
     Node rootElem(this->attrNum,0);
+    rootElem.isSingle = false;
+    rootElem.isPi = true;
+    rootElem.piSum = 0;
     this->elemSets.insert(rootElem);
+}
+
+void Level::initSnd()
+{
+    this->index = 1;
+    for(int j = 0; j < this->attrNum; j++)
+    {
+        Node newNode(this->attrNum,j);
+        newNode.isSingle = true;
+        getPi(newNode);
+        this->elemSets.insert(newNode);
+    }
+}
+
+bool Level::isNodeIn(Node& source)
+{
+    int srcNodeElem = source.nodeElem;
+    for(auto t : this->elemSets)
+    {
+        if(t.nodeElem == srcNodeElem)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Level::getPi(Node& target)
@@ -132,4 +164,5 @@ void Level::getPiProduct(Node& target, Node& A, Node& B)
     }
     target.pi = tmpResVec;
     target.piSum = tmpSum;
+    target.isPi = true;
 }

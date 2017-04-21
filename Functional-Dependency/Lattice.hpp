@@ -10,6 +10,7 @@
 #define Lattice_hpp
 
 #include "Level.hpp"
+#include "Table.hpp"
 #include <iostream>
 #include <set>
 #include <vector>
@@ -18,10 +19,12 @@ using namespace std;
 class Lattice{
 public:
     int attrNum;
+    Table table;
     vector<Level>levelList;
     
     Lattice();
-    Lattice(int attrNumInput);
+    Lattice(Table& tableIn);
+    Lattice(int attrNumInput,Table& tableIn);
 };
 
 #endif /* Lattice_hpp */
