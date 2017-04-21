@@ -11,44 +11,125 @@
 #include <iostream>
 #include <set>
 #include <vector>
+#include <string>
+#include <unordered_map>
 using namespace std;
 
-Level::Level(int indexInput,int attrNumInput)
+Level::Level(int indexInput,int attrNumInput,Table& tableIn)
 {
     this->index = indexInput;
     this->attrNum = attrNumInput;
+    this->table = tableIn;
 }
 
-Level Level::update(Level preLevel)
+void Level::update(Level& preLevel,Level& sndLevel)
 {
     this->index = preLevel.index + 1;
-    int preElemNum = int(preLevel.elemSets.size());
-    for(int i = 0; i < preElemNum; i++)
+    this->attrNum = preLevel.attrNum;
+    set<Node>preElemSets = preLevel.elemSets;
+    set<Node>sndElemSets = sndLevel.elemSets;
+    for(auto t : preElemSets)
     {
-        Node tmp = preLevel.elemSets[i];
-        for(int j = 0; j < this->attrNum; j++)
+        Node tmp = t;
+        for(auto sndt : sndElemSets)
         {
-            set<int>::iterator it = tmp.nodeElem.find(j);
-            if(it == tmp.nodeElem.end())
+            int newElem = tmp.nodeElem | sndt.nodeElem;
+            Node newNode(this->attrNum,newElem);
+            if(preLevel.index == 0)
             {
-                Node newTmp;
-                newTmp.nodeElem = tmp.nodeElem;
-                newTmp.nodeElem.insert(j);
-                
-                vector<Node>::iterator itv = find(this->elemSets.begin(),this->elemSets.end(),newTmp);
-                if(itv == this->elemSets.end())
-                {
-                    this->elemSets.push_back(newTmp);
-                }
+                newNode.isSingle = true;
+                getPi(newNode);
             }
+            else
+            {
+                newNode.isSingle = false;
+                getPiProduct(newNode,tmp,sndt);
+            }
+            this->elemSets.insert(newNode);
         }
     }
-    return preLevel;
 }
 
 void Level::initRoot()
 {
     this->index = 0;
-    Node rootElem;
-    this->elemSets.push_back(rootElem);
+    Node rootElem(this->attrNum,0);
+    this->elemSets.insert(rootElem);
+}
+
+void Level::getPi(Node& target)
+{
+    if(target.isPi == true) return;
+    vector<vector<int>>tmpResVec;
+    unordered_map<string, vector<int>>tmpHash;
+    int tmpSum = 0;
+    vector<vector<string>>tmpTable = this->table.table;
+    int rowSize = int(tmpTable.size());
+    int targetElem = target.getSingle();
+    for(int i = 0; i < rowSize; i++)
+    {
+        string elemData = tmpTable[i][targetElem];
+        tmpHash[elemData].push_back(i);//注意这块不知道能否直接添加进map
+    }
+    for(auto it : tmpHash)
+    {
+        vector<int>itSec = it.second;
+        if(itSec.size() > 1)
+        {
+            tmpResVec.push_back(itSec);
+            tmpSum += itSec.size();
+        }
+    }
+    target.isPi = true;
+    target.pi = tmpResVec;
+    target.piSum = tmpSum;
+    return;
+}
+
+void Level::getPiProduct(Node& target, Node& A, Node& B)
+{
+    if(target.isPi == true) return;
+    vector<vector<int>>tmpResVec;
+    int sizeA = int(A.pi.size());
+    int sizeB = int(B.pi.size());
+    vector<int>T;
+    T.assign(this->table.table.size(), -1);//不知道assign能否直接开空间
+    vector<vector<int>>S;
+    vector<int>eptVec = vector<int>();
+    int tmpSum = 0;
+    for(int i = 0; i < sizeA; i++)
+    {
+        vector<int>c = A.pi[i];
+        for(auto it : c)
+        {
+            int t = it;
+            T[t] = i;
+        }
+        S.push_back(eptVec);
+    }
+    for(int i = 0; i < sizeB; i++)
+    {
+        vector<int>c = B.pi[i];
+        for(auto it : c)
+        {
+            int t = it;
+            if(T[t] >= 0)
+            {
+                S[T[t]].push_back(t);
+            }
+        }
+        for(auto it : c)
+        {
+            int t = it;
+            if(T[t] < 0) continue;
+            if(S[T[t]].size() >= 2)
+            {
+                tmpResVec.push_back(S[T[t]]);
+                tmpSum += S[T[t]].size();
+            }
+            S[T[t]] = eptVec;
+        }
+    }
+    target.pi = tmpResVec;
+    target.piSum = tmpSum;
 }

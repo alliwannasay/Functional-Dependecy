@@ -152,31 +152,38 @@ void Tane::prune(int levelIndex)
 
 set<int> Tane::getInter(set<int>&A,set<int>&B)
 {
+    startClock();
     vector<int>tmp;
     tmp.resize(A.size()+B.size());
     vector<int>::iterator it = set_intersection(A.begin(),A.end(),B.begin(),B.end(),tmp.begin());
     tmp.resize(it-tmp.begin());
     set<int>result(tmp.begin(),tmp.end());
+    endClock();
     return result;
 }
 
 set<int> Tane::getComple(set<int>&A,set<int>&B)
 {
+    startClock();
     vector<int>tmp;
     tmp.resize(A.size()+B.size());
     vector<int>::iterator it = set_difference(A.begin(),A.end(),B.begin(),B.end(),tmp.begin());
     tmp.resize(it-tmp.begin());
     set<int>result(tmp.begin(),tmp.end());
+    endClock();
     return result;
+    
 }
 
 set<int> Tane::getUnion(set<int>&A,set<int>&B)
 {
+    startClock();
     vector<int>tmp;
     tmp.resize(A.size()+B.size());
     vector<int>::iterator it = set_union(A.begin(),A.end(),B.begin(),B.end(),tmp.begin());
     tmp.resize(it-tmp.begin());
     set<int>result(tmp.begin(),tmp.end());
+    endClock();
     return result;
 }
 

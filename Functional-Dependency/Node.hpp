@@ -12,13 +12,24 @@
 #include <iostream>
 #include <set>
 #include <vector>
+#include "Table.hpp"
 using namespace std;
 
 class Node{
 public:
-    set<int>nodeElem;
+    int attrNum;
+    int nodeElem;
+    int rhs;
+    bool isSingle;
+    bool isPi;
+    int piSum;
+    vector<vector<int>>pi;
     
     Node();
+    Node(int attrNumInput,int nodeElemInput);
+    void getVec(vector<int>& result);
+    int getSingle();
+//    void getSubset(Node& targetA, Node&targetB, Node& source);
     bool operator == (Node& nodeInput);
     bool operator == (const Node& nodeInput);
     

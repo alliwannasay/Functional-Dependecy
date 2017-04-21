@@ -26,9 +26,7 @@ class Tane{
 public:
     int attrNum;
     Lattice lat;
-    unordered_map<string,set<int>>RHS;
     vector<pair<string,int>>FD;
-    unordered_map<string,vector<set<int>>>par;
     unordered_map<string, int>parSum;
     set<int>emptySet;
     set<int>R;

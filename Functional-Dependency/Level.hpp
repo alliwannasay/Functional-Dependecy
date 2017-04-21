@@ -13,21 +13,23 @@
 #include <set>
 #include <vector>
 #include "Node.hpp"
+#include "Table.hpp"
 using namespace std;
 
 
 class Level{
-private:
+public:
     int index;
     int attrNum;
-public:
-    vector<Node>elemSets;
-public:
-    int getIndex(){return index;}
-    int getAttrNum(){return attrNum;}
-    Level(int indexInput,int attrNumInput);
-    Level update(Level preLevel);
+    Table table;
+    set<Node>elemSets;
+
+    Level(int indexInput,int attrNumInput,Table& tableIn);
+    void update(Level& preLevel,Level&sndLevel);
     void initRoot();
+    void getPi(Node& target);
+    void getPiProduct(Node& target, Node& A, Node& B);
+    void isInLevel(Node& source);
 };
 
 #endif /* Level_hpp */
