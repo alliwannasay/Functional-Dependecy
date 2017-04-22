@@ -14,6 +14,7 @@
 #include <iostream>
 #include <set>
 #include <vector>
+#include <utility>
 using namespace std;
 
 class Lattice{

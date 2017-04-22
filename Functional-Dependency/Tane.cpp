@@ -35,35 +35,272 @@ Tane::Tane(string filename)
     this->table.readIn(filename);
     int attrNumInput = this->table.attrNum;
     this->attrNum = attrNumInput;
-    this->lat = Lattice(attrNumInput,this->table);
-    this->all = (1 << attrNumInput) - 1;
+    this->all = (1 << attrNumInput);
     this->tsum = 0;
+    this->pi = new vector<vector<int>>[this->all];
+    this->piSum = new int[this->all];
+    this->RHS = new int[this->all];
+    memset(this->pi, 0, this->all * sizeof(vector<vector<int>>));
+    memset(this->piSum, 0, this->all * sizeof(int));
+    memset(this->RHS,0,this->all * sizeof(int));
+    vector<vector<int>>ept;
+    pi[0] = ept;;
 }
 
 void Tane::taneMain()
 {
-    this->lat.levelList[0].elemSets[0].nodeElem = this->all;
-    for(int i = 1; i <= this->attrNum; i++)
+    vector<Level>levellist;
+    this->RHS[0] = this->all - 1;
+    for(int i = 0; i <= this->attrNum; i++)
     {
-        
-        this->lat.levelList[i].update(this->lat.levelList[i-1]);
-        computeDependencies(i);
-        prune(i);
-        
+        Level newLevel(i, this->attrNum);
+        if(i > 1)
+        {
+            newLevel.update(levellist[i-1]);
+        }
+        levellist.push_back(newLevel);
+        computeDependencies(levellist[i]);
+        if(i == 12)
+        {
+            int a = 0;
+        }
     }
     
 }
 
-bool Tane::isRHSEmpty(set<int>&X)
+//void Tane::prune(int levelIndex)
+//{
+//    Level thisLevel = this->lat.levelList[levelIndex];
+//    int thisSize = int(thisLevel.elemSets.size());
+//    for(int i = 0; i < thisSize; i++)
+//    {
+//        Node tmpNode = thisLevel.elemSets[i];
+//        set<int> tmpSet = tmpNode.nodeElem;
+//        if(isRHSEmpty(tmpSet))
+//        {
+//            vector<Node>::iterator it = find(thisLevel.elemSets.begin(),thisLevel.elemSets.end(),tmpNode);
+//            thisLevel.elemSets.erase(it);
+//            this->lat.levelList[levelIndex] = thisLevel;
+//        }
+//    }
+//}
+
+void Tane::computeDependencies(Level& level)
 {
-    set<int> result = this->RHS[set2Str(X)];
-    if(result.empty())
+    for(auto X : level.elemSets)
     {
-        return true;
+        int C_X = this->all - 1;
+        int tmpX = X;
+        for(int a = 0; a < this->attrNum; a++)
+        {
+            if(tmpX % 2 != 0)
+            {
+                int A = (1 << a);
+                int X_A = X & (~A);
+                C_X = C_X & this->RHS[X_A];
+            }
+            tmpX >>= 1;
+        }
+        RHS[X] = C_X;
     }
-    return false;
+    for(auto X : level.elemSets)
+    {
+        int inter = X & RHS[X];
+        int tmpI = inter;
+        for(int a = 0; a < this->attrNum; a++)
+        {
+            if(tmpI % 2 != 0)
+            {
+                int A = (1 << a);
+                int X_A = X & (~A);
+                if(!(X_A == 0 || X == 0))
+                {
+                    
+                    int X_AS = piCalculator(X_A);
+                    int XS = piProductCalculator(X_A,A);
+                    if(piSum[X_A] - X_AS == piSum[X] - XS)
+                    {
+                        FD.insert(make_pair(X_A, A));
+                        int C_X = RHS[X];
+                        C_X = C_X & (~A);
+                        int R_X = (this->all-1) & (~X);
+                        C_X = C_X & (~R_X);
+                        RHS[X] = C_X;
+                    }
+                }
+            }
+            tmpI >>= 1;
+        }
+    }
 }
 
+//void Tane::computeDependencies(Level& l) {
+//    set<int>::iterator it, begin, end;
+//    int x, tmpA, flag, shiftTmp, res, e, m, comple, tmpB, tmpE1, tmpE2;
+//    
+//    begin = l.elemSets.begin();
+//    end = l.elemSets.end();
+//    
+//    it = begin;
+//    while (it != end) {
+//        // for each X in L
+//        x = *it;
+//        tmpA = 1;
+//        
+//        flag = 0;
+//        shiftTmp = (1 << attrNum);
+//        res = shiftTmp - 1;
+//        
+//        // RHS+(X) := InterRHS+(X\{E})
+//        for (int i = 0; i < attrNum; ++i) {
+//            if (x & tmpA) {
+//                e = x - tmpA;
+//                res = res & RHS[e];
+//            }
+//            tmpA <<= 1;
+//        }
+//        RHS[x] = res;
+//        
+//        // foreach E belongs to X intersect RHS+(X) do
+//        tmpA = 1;
+//        m = x & RHS[x];
+//        for (int i = 0; i < attrNum; ++i) {
+//            if (m & tmpA) {
+//                // if X\{E} -> E is valid
+//                piCalculator(x - tmpA);
+//                piProductCalculator(x - tmpA, tmpA);
+//                tmpE1 = pi[x - tmpA].size();
+//                tmpE2 = pi[x].size();
+//                if (piSum[x - tmpA] - tmpE1 == piSum[x] - tmpE2) {
+//                    FD.insert(make_pair(x - tmpA, tmpA));
+//                    // remove E for RHS+(X)
+//                    RHS[x] -= tmpA;
+//                    // remove all F belongs to R\X from RHS+(X)
+//                    comple = (shiftTmp - 1) - x;
+//                    tmpB = 1;
+//                    for (int j = 0; j < attrNum; ++j) {
+//                        if (comple & tmpB) {
+//                            if (RHS[x] & tmpB) {
+//                                RHS[x] -= tmpB;
+//                            }
+//                        }
+//                        tmpB <<= 1;
+//                    }
+//                }
+//            }
+//            tmpA <<= 1;
+//        }
+//        
+//        // if RHS+(X) == empty do
+//        if (RHS[x] == 0) {
+//            l.elemSets.erase(it++);
+//        } else {
+//            ++it;
+//        }
+//    }
+//}
+
+
+int Tane::piCalculator(int A)
+{
+    if(A == 0) return 0;
+    if(pi[A].size() != 0) return pi[A].size();
+    vector<vector<int>>tmpResVec;
+    unordered_map<string, vector<int>>tmpHash;
+    int tmpSum = 0;
+    vector<vector<string>>tmpTable = this->table.table;
+    int rowSize = int(tmpTable.size());
+    int targetElem = 0;
+    int tmpA = A;
+    for(int i = 0; i < attrNum;i++)
+    {
+        if(tmpA % 2 != 0)
+        {
+            targetElem = i;
+            break;
+        }
+        tmpA >>= 1;
+    }
+    
+    for(int i = 0; i < rowSize; i++)
+    {
+        string elemData = tmpTable[i][targetElem];
+        tmpHash[elemData].push_back(i);
+    }
+    for(auto it : tmpHash)
+    {
+        vector<int>itSec = it.second;
+        if(itSec.size() > 1)
+        {
+            tmpResVec.push_back(itSec);
+            tmpSum += itSec.size();
+        }
+    }
+    pi[A] = tmpResVec;
+    piSum[A] = tmpSum;
+    return pi[A].size();
+}
+
+
+int Tane::piProductCalculator(int A,int B)
+{
+    if(pi[A + B].size() != 0) return pi[A + B].size();
+    if(A == 0 || B == 0) return 0;
+    vector<vector<int>>tmpResVec;
+    int sizeA = int(pi[A].size());
+    int sizeB = int(pi[B].size());
+    vector<int>T;
+    T.assign(this->table.table.size(), -1);
+    vector<vector<int>>S;
+    vector<int>eptVec = vector<int>();
+    int tmpSum = 0;
+    for(int i = 0; i < sizeA; i++)
+    {
+        vector<int>c = pi[A][i];
+        for(auto it : c)
+        {
+            int t = it;
+            T[t] = i;
+        }
+        S.push_back(eptVec);
+    }
+    for(int i = 0; i < sizeB; i++)
+    {
+        vector<int>c = pi[B][i];
+        for(auto it : c)
+        {
+            int t = it;
+            if(T[t] >= 0)
+            {
+                S[T[t]].push_back(t);
+            }
+        }
+        for(auto it : c)
+        {
+            int t = it;
+            if(T[t] < 0) continue;
+            if(S[T[t]].size() >= 2)
+            {
+                tmpResVec.push_back(S[T[t]]);
+                tmpSum += S[T[t]].size();
+            }
+            S[T[t]] = eptVec;
+        }
+    }
+    int C = A + B;
+    pi[C] = tmpResVec;
+    piSum[C] = tmpSum;
+    return pi[C].size();
+}
+
+
+
+Tane::~Tane()
+{
+    delete [] pi;
+    delete [] piSum;
+    delete [] RHS;
+}
 
 string int2str(int int_temp)
 {
@@ -75,302 +312,24 @@ string int2str(int int_temp)
 }
 
 
-set<int> Tane::str2Set(string s)
-{
-    
-    vector<string>resVec = this->table.divideByChar(s,',');
-    set<int>result;
-    int vecSize = int(resVec.size());
-    for(int i = 0; i < vecSize; i++)
-    {
-        int tmp = atoi(resVec[i].c_str());
-        result.insert(tmp);
-    }
-    
-    return result;
-}
-
-string Tane::set2Str(set<int>&A)
-{
-    
-    if(A.size() == 0) return "";
-    vector<int>tmp;
-    string result;
-    for(set<int>::iterator it = A.begin(); it != A.end(); it++)
-    {
-        tmp.push_back(*it);
-    }
-    result = int2str(tmp[0]);
-    for(int i = 1; i < tmp.size();i++)
-    {
-        result = result + "," + int2str(tmp[i]);
-    }
-    
-    return result;
-}
-
-void Tane::calculatePartition(set<int>&A)
-{
-    if(A.size() == 0) return;
-    for(set<int>::iterator it = A.begin(); it != A.end(); it++)
-    {
-        singlePartition(*it);
-        set<int>sin;
-        sin.insert(*it);
-        set<int>tmp = A;
-        tmp.erase(*it);
-        if(this->par[set2Str(tmp)].size() == 0)
-        {
-            calculatePartition(tmp);
-        }
-        productPartition(this->par[set2Str(tmp)], this->par[set2Str(sin)], tmp, sin);
-    }
-}
-
-void Tane::prune(int levelIndex)
-{
-    Level thisLevel = this->lat.levelList[levelIndex];
-    int thisSize = int(thisLevel.elemSets.size());
-    for(int i = 0; i < thisSize; i++)
-    {
-        Node tmpNode = thisLevel.elemSets[i];
-        set<int> tmpSet = tmpNode.nodeElem;
-        if(isRHSEmpty(tmpSet))
-        {
-            vector<Node>::iterator it = find(thisLevel.elemSets.begin(),thisLevel.elemSets.end(),tmpNode);
-            thisLevel.elemSets.erase(it);
-            this->lat.levelList[levelIndex] = thisLevel;
-        }
-    }
-}
-
-set<int> Tane::getInter(set<int>&A,set<int>&B)
-{
-    startClock();
-    vector<int>tmp;
-    tmp.resize(A.size()+B.size());
-    vector<int>::iterator it = set_intersection(A.begin(),A.end(),B.begin(),B.end(),tmp.begin());
-    tmp.resize(it-tmp.begin());
-    set<int>result(tmp.begin(),tmp.end());
-    endClock();
-    return result;
-}
-
-set<int> Tane::getComple(set<int>&A,set<int>&B)
-{
-    startClock();
-    vector<int>tmp;
-    tmp.resize(A.size()+B.size());
-    vector<int>::iterator it = set_difference(A.begin(),A.end(),B.begin(),B.end(),tmp.begin());
-    tmp.resize(it-tmp.begin());
-    set<int>result(tmp.begin(),tmp.end());
-    endClock();
-    return result;
-    
-}
-
-set<int> Tane::getUnion(set<int>&A,set<int>&B)
-{
-    startClock();
-    vector<int>tmp;
-    tmp.resize(A.size()+B.size());
-    vector<int>::iterator it = set_union(A.begin(),A.end(),B.begin(),B.end(),tmp.begin());
-    tmp.resize(it-tmp.begin());
-    set<int>result(tmp.begin(),tmp.end());
-    endClock();
-    return result;
-}
-
-bool Tane::isValid(set<int>&A,int B)
-{
-    
-    if(this->par[set2Str(A)].size() == 0)
-    {
-        calculatePartition(A);
-    }
-    vector<set<int>>piA = this->par[set2Str(A)];
-    set<int>setB;
-    setB.insert(B);
-    if(this->par[set2Str(setB)].size() == 0)
-    {
-        calculatePartition(setB);
-    }
-    set<int>setAB = getUnion(A,setB);
-    if(this->par[set2Str(setAB)].size() == 0)
-    {
-        productPartition(this->par[set2Str(A)], this->par[set2Str(setB)], A, setB);
-    }
-    vector<set<int>>piAB = this->par[set2Str(setAB)];
-    
-    if(this->parSum[set2Str(A)]-piA.size() == this->parSum[set2Str(setAB)]-piAB.size())
-    {
-        return true;
-    }
-    
-    return false;
-}
-
-
-bool Tane::isSuperkey(set<int>&X)
-{
-    if(this->par[set2Str(X)].size() == 0)
-    {
-        calculatePartition(X);
-    }
-    vector<set<int>>piRes = this->par[set2Str(X)];
-    if(piRes.size() == this->table.table.size())
-    {
-        return true;
-    }
-    return false;
-}
-
-void Tane::computeDependencies(int levelIndex)
-{
-    
-    Level thisLevel = this->lat.levelList[levelIndex];
-    int thisLevelSize = int(thisLevel.elemSets.size());
-    for(int i = 0; i < thisLevelSize; i++)
-    {
-        Node tmpNode = thisLevel.elemSets[i];
-        set<int> tmpSet = tmpNode.nodeElem;
-        set<int> tmpInter = this->R;
-        for(set<int>::iterator it=tmpSet.begin(); it != tmpSet.end(); it++)
-        {
-            set<int>afterDelete = tmpSet;
-            afterDelete.erase(*it);
-            set<int>rhsResult = this->RHS[set2Str(afterDelete)];
-            tmpInter = getInter(tmpInter,rhsResult);
-        }
-        this->RHS.insert(make_pair(set2Str(tmpSet), tmpInter));
-    }
-    for(int i = 0; i < thisLevelSize;i++)
-    {
-        Node tmpNode = thisLevel.elemSets[i];
-        set<int> tmpSet = tmpNode.nodeElem;
-        set<int> tmpRHS = this->RHS[set2Str(tmpSet)];
-        set<int> toTraverse = getInter(tmpSet,tmpRHS);
-        
-        for(set<int>::iterator it2 = toTraverse.begin(); it2 != toTraverse.end(); it2++)
-        {
-            set<int>afterDelete = tmpSet;
-            afterDelete.erase(*it2);
-            if(afterDelete.size() == 0) continue;
-            
-            
-            if(isValid(afterDelete,*it2))
-            {
-                this->FD.push_back(make_pair(set2Str(afterDelete), *it2));
-                this->RHS[set2Str(tmpSet)].erase(*it2);
-                set<int>RdTmpSet = getComple(this->R,tmpSet);
-                tmpRHS = this->RHS[set2Str(tmpSet)];
-                set<int>afterRemove = getComple(tmpRHS, RdTmpSet);
-                this->RHS[set2Str(tmpSet)] = afterRemove;
-            }
-            
-        }
-    }
-    
-}
-
-void Tane::singlePartition(int index)
-{
-    unordered_map<string, set<int>>pi;
-    vector<vector<string>>tmpTable = this->table.table;
-    int rowSize = int(tmpTable.size());
-    int sum = 0;
-    for(int i = 0; i < rowSize; i++)
-    {
-        string elemData = tmpTable[i][index];
-        set<int> tmpSet = pi[elemData];
-        tmpSet.insert(i);
-        pi[elemData] = tmpSet;
-    }
-    vector<set<int>>piVec;
-    
-    for(unordered_map<string, set<int>>::iterator it = pi.begin(); it != pi.end(); it++)
-    {
-        if((*it).second.size() > 1)
-        {
-            piVec.push_back((*it).second);
-            sum += (*it).second.size();
-        }
-    }
-    set<int>indexSet;
-    indexSet.insert(index);
-    this->par[set2Str(indexSet)] = piVec;
-    this->parSum[set2Str(indexSet)] = sum;
-    return;
-}
-
-void Tane::productPartition(vector<set<int>>&A,vector<set<int>>&B,set<int>&setA,set<int>&setB)
-{
-    
-    if(setA.size() == 0 || setB.size() == 0) return;
-    vector<set<int>>result;
-    int sizeA = int(A.size());
-    int sizeB = int(B.size());
-    vector<int>T;
-    T.resize(this->table.table.size());
-    T.assign(this->table.table.size(), -1);
-    vector<set<int>>S;
-    S.resize(this->table.table.size());
-    int sum = 0;
-    for(int i = 0; i < sizeA; i++)
-    {
-        set<int>c = A[i];
-        for(set<int>::iterator it = c.begin(); it != c.end(); it++)
-        {
-            int t = *it;
-            T[t] = i;
-        }
-        S[i] = this->emptySet;
-    }
-    for(int i = 0; i < sizeB; i++)
-    {
-        set<int>c = B[i];
-        for(set<int>::iterator it = c.begin(); it != c.end(); it++)
-        {
-            int t = *it;
-            set<int>tSet;
-            tSet.insert(t);
-            if(T[t] >= 0)
-            {
-                S[T[t]].insert(t);
-            }
-        }
-        for(set<int>::iterator it = c.begin(); it != c.end(); it++)
-        {
-            int t = *it;
-            if(T[t] < 0) continue;
-            if(S[T[t]].size() >= 2)
-            {
-                result.push_back(S[T[t]]);
-                sum += S[T[t]].size();
-            }
-            S[T[t]] = this->emptySet;
-        }
-    }
-    set<int>C = getUnion(setA, setB);
-    this->par[set2Str(C)] = result;
-    this->parSum[set2Str(C)] = sum;
-    
-}
-
 void Tane::outputFile(string filename)
 {
     ofstream fout(filename);
     vector<string>result;
     int sizeFD = int(this->FD.size());
-    for(int i = 0; i < sizeFD; i++)
+    for(set<pair<int,int>>::iterator its = FD.begin(); its != FD.end(); its++)
     {
         string A = "";
-        set<int>left = str2Set(FD[i].first);
-        for(set<int>::iterator itj = left.begin(); itj != left.end(); itj++)
+        int left = (*its).first;
+        vector<int>res;
+        int2Vec(left,res);
+        for(vector<int>::iterator itj = res.begin(); itj != res.end(); itj++)
         {
             A = A+int2str(*itj+1)+" ";
         }
-        A = A+"-> "+int2str(FD[i].second+1)+"\n";
+        vector<int>res2;
+        int2Vec((*its).second,res2);
+        A = A+"-> "+int2str(res2[0]+1)+"\n";
         result.push_back(A);
     }
     sort(result.begin(),result.end());
@@ -378,5 +337,17 @@ void Tane::outputFile(string filename)
     for(int i = 0; i < resSize; i++)
     {
         fout<<result[i];
+    }
+}
+
+void Tane::int2Vec(int x, vector<int>&res)
+{
+    int tmp;
+    tmp = 1;
+    for (int i = 0; i < attrNum; ++i) {
+        if (x & tmp) {
+            res.push_back(i);
+        }
+        tmp <<= 1;
     }
 }

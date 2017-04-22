@@ -8,10 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		650F4D521EA5DC3E003D4964 /* Table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 650F4D501EA5DC3E003D4964 /* Table.cpp */; settings = {ASSET_TAGS = (); }; };
-		65FEB8D81EA4547A0096FF79 /* Lattice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65FEB8CF1EA4547A0096FF79 /* Lattice.cpp */; settings = {ASSET_TAGS = (); }; };
 		65FEB8D91EA4547A0096FF79 /* Level.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65FEB8D11EA4547A0096FF79 /* Level.cpp */; settings = {ASSET_TAGS = (); }; };
 		65FEB8DA1EA4547A0096FF79 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65FEB8D31EA4547A0096FF79 /* main.cpp */; settings = {ASSET_TAGS = (); }; };
-		65FEB8DB1EA4547A0096FF79 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65FEB8D41EA4547A0096FF79 /* Node.cpp */; settings = {ASSET_TAGS = (); }; };
 		65FEB8DC1EA4547A0096FF79 /* Tane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65FEB8D61EA4547A0096FF79 /* Tane.cpp */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
@@ -31,13 +29,9 @@
 		650F4D501EA5DC3E003D4964 /* Table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Table.cpp; sourceTree = "<group>"; };
 		650F4D511EA5DC3E003D4964 /* Table.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Table.hpp; sourceTree = "<group>"; };
 		65FEB8B21EA451AE0096FF79 /* Functional-Dependency */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Functional-Dependency"; sourceTree = BUILT_PRODUCTS_DIR; };
-		65FEB8CF1EA4547A0096FF79 /* Lattice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Lattice.cpp; sourceTree = "<group>"; };
-		65FEB8D01EA4547A0096FF79 /* Lattice.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Lattice.hpp; sourceTree = "<group>"; };
 		65FEB8D11EA4547A0096FF79 /* Level.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Level.cpp; sourceTree = "<group>"; };
 		65FEB8D21EA4547A0096FF79 /* Level.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Level.hpp; sourceTree = "<group>"; };
 		65FEB8D31EA4547A0096FF79 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		65FEB8D41EA4547A0096FF79 /* Node.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Node.cpp; sourceTree = "<group>"; };
-		65FEB8D51EA4547A0096FF79 /* Node.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Node.hpp; sourceTree = "<group>"; };
 		65FEB8D61EA4547A0096FF79 /* Tane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tane.cpp; sourceTree = "<group>"; };
 		65FEB8D71EA4547A0096FF79 /* Tane.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Tane.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -72,13 +66,9 @@
 		65FEB8B41EA451AE0096FF79 /* Functional-Dependency */ = {
 			isa = PBXGroup;
 			children = (
-				65FEB8CF1EA4547A0096FF79 /* Lattice.cpp */,
-				65FEB8D01EA4547A0096FF79 /* Lattice.hpp */,
 				65FEB8D11EA4547A0096FF79 /* Level.cpp */,
 				65FEB8D21EA4547A0096FF79 /* Level.hpp */,
 				65FEB8D31EA4547A0096FF79 /* main.cpp */,
-				65FEB8D41EA4547A0096FF79 /* Node.cpp */,
-				65FEB8D51EA4547A0096FF79 /* Node.hpp */,
 				65FEB8D61EA4547A0096FF79 /* Tane.cpp */,
 				65FEB8D71EA4547A0096FF79 /* Tane.hpp */,
 				650F4D501EA5DC3E003D4964 /* Table.cpp */,
@@ -145,9 +135,7 @@
 			files = (
 				650F4D521EA5DC3E003D4964 /* Table.cpp in Sources */,
 				65FEB8D91EA4547A0096FF79 /* Level.cpp in Sources */,
-				65FEB8D81EA4547A0096FF79 /* Lattice.cpp in Sources */,
 				65FEB8DA1EA4547A0096FF79 /* main.cpp in Sources */,
-				65FEB8DB1EA4547A0096FF79 /* Node.cpp in Sources */,
 				65FEB8DC1EA4547A0096FF79 /* Tane.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
