@@ -30,7 +30,7 @@ public:
     set<pair<int,int>>FD;
     Table table;
     int all;
-    std::unordered_map<std::string, int> hashMap;
+    bool* isPi;
 
     time_t tsum;
     time_t begin;

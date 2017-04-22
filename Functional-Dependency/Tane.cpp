@@ -40,11 +40,13 @@ Tane::Tane(string filename)
     this->pi = new vector<vector<int>>[this->all];
     this->piSum = new int[this->all];
     this->RHS = new int[this->all];
+    this->isPi = new bool[this->all];
     memset(this->pi, 0, this->all * sizeof(vector<vector<int>>));
     memset(this->piSum, 0, this->all * sizeof(int));
     memset(this->RHS,0,this->all * sizeof(int));
+    memset(isPi, 0, this->all * sizeof(bool));
     vector<vector<int>>ept;
-    pi[0] = ept;;
+    pi[0] = ept;
 }
 
 void Tane::taneMain()
@@ -60,30 +62,9 @@ void Tane::taneMain()
         }
         levellist.push_back(newLevel);
         computeDependencies(levellist[i]);
-        if(i == 12)
-        {
-            int a = 0;
-        }
     }
     
 }
-
-//void Tane::prune(int levelIndex)
-//{
-//    Level thisLevel = this->lat.levelList[levelIndex];
-//    int thisSize = int(thisLevel.elemSets.size());
-//    for(int i = 0; i < thisSize; i++)
-//    {
-//        Node tmpNode = thisLevel.elemSets[i];
-//        set<int> tmpSet = tmpNode.nodeElem;
-//        if(isRHSEmpty(tmpSet))
-//        {
-//            vector<Node>::iterator it = find(thisLevel.elemSets.begin(),thisLevel.elemSets.end(),tmpNode);
-//            thisLevel.elemSets.erase(it);
-//            this->lat.levelList[levelIndex] = thisLevel;
-//        }
-//    }
-//}
 
 void Tane::computeDependencies(Level& level)
 {
@@ -97,16 +78,15 @@ void Tane::computeDependencies(Level& level)
             {
                 int A = (1 << a);
                 int X_A = X & (~A);
-                C_X = C_X & this->RHS[X_A];
+                int CX_A = RHS[X_A];
+                C_X &= CX_A;
             }
             tmpX >>= 1;
         }
         RHS[X] = C_X;
-    }
-    for(auto X : level.elemSets)
-    {
-        int inter = X & RHS[X];
-        int tmpI = inter;
+        
+        int Inter = X & RHS[X];
+        int tmpI = Inter;
         for(int a = 0; a < this->attrNum; a++)
         {
             if(tmpI % 2 != 0)
@@ -115,15 +95,14 @@ void Tane::computeDependencies(Level& level)
                 int X_A = X & (~A);
                 if(!(X_A == 0 || X == 0))
                 {
-                    
-                    int X_AS = piCalculator(X_A);
-                    int XS = piProductCalculator(X_A,A);
-                    if(piSum[X_A] - X_AS == piSum[X] - XS)
+                    int piX_A = piCalculator(X_A);
+                    int piX = piProductCalculator(X_A, A);
+                    if(piSum[X_A] - piX_A == piSum[X] - piX)
                     {
-                        FD.insert(make_pair(X_A, A));
+                        FD.insert(make_pair(X_A,A));
                         int C_X = RHS[X];
                         C_X = C_X & (~A);
-                        int R_X = (this->all-1) & (~X);
+                        int R_X = (this->all - 1) & (~X);
                         C_X = C_X & (~R_X);
                         RHS[X] = C_X;
                     }
@@ -132,167 +111,101 @@ void Tane::computeDependencies(Level& level)
             tmpI >>= 1;
         }
     }
+    
 }
 
-//void Tane::computeDependencies(Level& l) {
-//    set<int>::iterator it, begin, end;
-//    int x, tmpA, flag, shiftTmp, res, e, m, comple, tmpB, tmpE1, tmpE2;
-//    
-//    begin = l.elemSets.begin();
-//    end = l.elemSets.end();
-//    
-//    it = begin;
-//    while (it != end) {
-//        // for each X in L
-//        x = *it;
-//        tmpA = 1;
-//        
-//        flag = 0;
-//        shiftTmp = (1 << attrNum);
-//        res = shiftTmp - 1;
-//        
-//        // RHS+(X) := InterRHS+(X\{E})
-//        for (int i = 0; i < attrNum; ++i) {
-//            if (x & tmpA) {
-//                e = x - tmpA;
-//                res = res & RHS[e];
-//            }
-//            tmpA <<= 1;
-//        }
-//        RHS[x] = res;
-//        
-//        // foreach E belongs to X intersect RHS+(X) do
-//        tmpA = 1;
-//        m = x & RHS[x];
-//        for (int i = 0; i < attrNum; ++i) {
-//            if (m & tmpA) {
-//                // if X\{E} -> E is valid
-//                piCalculator(x - tmpA);
-//                piProductCalculator(x - tmpA, tmpA);
-//                tmpE1 = pi[x - tmpA].size();
-//                tmpE2 = pi[x].size();
-//                if (piSum[x - tmpA] - tmpE1 == piSum[x] - tmpE2) {
-//                    FD.insert(make_pair(x - tmpA, tmpA));
-//                    // remove E for RHS+(X)
-//                    RHS[x] -= tmpA;
-//                    // remove all F belongs to R\X from RHS+(X)
-//                    comple = (shiftTmp - 1) - x;
-//                    tmpB = 1;
-//                    for (int j = 0; j < attrNum; ++j) {
-//                        if (comple & tmpB) {
-//                            if (RHS[x] & tmpB) {
-//                                RHS[x] -= tmpB;
-//                            }
-//                        }
-//                        tmpB <<= 1;
-//                    }
-//                }
-//            }
-//            tmpA <<= 1;
-//        }
-//        
-//        // if RHS+(X) == empty do
-//        if (RHS[x] == 0) {
-//            l.elemSets.erase(it++);
-//        } else {
-//            ++it;
-//        }
-//    }
-//}
 
 
 int Tane::piCalculator(int A)
 {
     if(A == 0) return 0;
-    if(pi[A].size() != 0) return pi[A].size();
-    vector<vector<int>>tmpResVec;
-    unordered_map<string, vector<int>>tmpHash;
-    int tmpSum = 0;
-    vector<vector<string>>tmpTable = this->table.table;
-    int rowSize = int(tmpTable.size());
-    int targetElem = 0;
+    if(isPi[A]==true) return pi[A].size();
+    unordered_map<string, vector<int>>resVec;
+    vector<vector<int>>result;
     int tmpA = A;
-    for(int i = 0; i < attrNum;i++)
+    int res = 0;
+    int sum = 0;
+    for(int a = 0;  a < this->attrNum; a++)
     {
         if(tmpA % 2 != 0)
         {
-            targetElem = i;
+            res = a;
             break;
         }
         tmpA >>= 1;
     }
     
-    for(int i = 0; i < rowSize; i++)
+    int tableSize = this->table.table.size();
+    for(int i = 0; i < tableSize; i++)
     {
-        string elemData = tmpTable[i][targetElem];
-        tmpHash[elemData].push_back(i);
+        string elemData = this->table.table[i][res];
+        resVec[elemData].push_back(i);
     }
-    for(auto it : tmpHash)
+    int resSize = resVec.size();
+    for(auto vec : resVec)
     {
-        vector<int>itSec = it.second;
-        if(itSec.size() > 1)
+        if(vec.second.size() > 1)
         {
-            tmpResVec.push_back(itSec);
-            tmpSum += itSec.size();
+            result.push_back(vec.second);
+            sum += vec.second.size();
         }
     }
-    pi[A] = tmpResVec;
-    piSum[A] = tmpSum;
+    pi[A] = result;
+    piSum[A] = sum;
+    isPi[A] = true;
     return pi[A].size();
 }
 
-
 int Tane::piProductCalculator(int A,int B)
 {
-    if(pi[A + B].size() != 0) return pi[A + B].size();
+    int C = A | B;
     if(A == 0 || B == 0) return 0;
-    vector<vector<int>>tmpResVec;
-    int sizeA = int(pi[A].size());
-    int sizeB = int(pi[B].size());
+    if(isPi[C]==true) return pi[C].size();
+    vector<vector<int>>result;
+    int sizeA = pi[A].size();
+    int sizeB = pi[B].size();
     vector<int>T;
-    T.assign(this->table.table.size(), -1);
     vector<vector<int>>S;
-    vector<int>eptVec = vector<int>();
-    int tmpSum = 0;
-    for(int i = 0; i < sizeA; i++)
+    vector<int>ept;
+    int sum = 0;
+    T.assign(this->table.table.size(),-1);
+    S.resize(sizeA+sizeB);
+    for(int i = 0; i < sizeA;i++)
     {
         vector<int>c = pi[A][i];
-        for(auto it : c)
+        for(auto t : c)
         {
-            int t = it;
             T[t] = i;
         }
-        S.push_back(eptVec);
+        S[i] = ept;
     }
     for(int i = 0; i < sizeB; i++)
     {
         vector<int>c = pi[B][i];
-        for(auto it : c)
+        for(auto t : c)
         {
-            int t = it;
             if(T[t] >= 0)
             {
                 S[T[t]].push_back(t);
             }
         }
-        for(auto it : c)
+        for(auto t : c)
         {
-            int t = it;
             if(T[t] < 0) continue;
             if(S[T[t]].size() >= 2)
             {
-                tmpResVec.push_back(S[T[t]]);
-                tmpSum += S[T[t]].size();
+                result.push_back(S[T[t]]);
+                sum += S[T[t]].size();
             }
-            S[T[t]] = eptVec;
+            S[T[t]] = ept;
         }
+
     }
-    int C = A + B;
-    pi[C] = tmpResVec;
-    piSum[C] = tmpSum;
+    pi[C] = result;
+    piSum[C] = sum;
+    isPi[C]=true;
     return pi[C].size();
 }
-
 
 
 Tane::~Tane()

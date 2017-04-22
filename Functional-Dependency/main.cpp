@@ -21,15 +21,12 @@ int main()
     time_t begin, end;
     begin = clock();
     
-    Tane thistane("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//data.txt");
+    Tane thistane("data.txt");
     thistane.taneMain();
-    thistane.outputFile("//Users//zzqmyos//Functional-Dependency//Functional-Dependency//my_test_output.txt");
+    thistane.outputFile("output.txt");
     
     end = clock();
-    cout << "Runtime : " << double(end - begin) / CLOCKS_PER_SEC << endl;
-    cout << "============================================" << endl;
-    
-    cout << "Validation Runtime : " << double(thistane.tsum) / CLOCKS_PER_SEC << endl;
-    cout << "============================================" << endl;
+    cout << "Time " << double(end - begin) / CLOCKS_PER_SEC << endl;
+    cout << "Total Dependencies  " << thistane.FD.size() << endl;
     return 0;
 }
